@@ -1,7 +1,10 @@
 {
     "DEV": {
         "PORT": 5000,
-        "DB_CONNECTION_STRING":"mongodb://localhost:27017/estates"
+        "DB_CONNECTION_STRING":"mongodb://localhost:27017/estates",
+        "SALT_ROUNDS":10,
+        "TOKEN_SECRET":"my very secret secret",
+        "COOKIE_NAME":"SESSION_TOKEN"
     },
     "PROD": {
         "PORT": 80
