@@ -8,8 +8,8 @@ async function createHousing({ name, type, year, city, image, description, piece
 
 async function getHousingById(id) {
     const housing = await Housing.findById(id)
-        .populate('rented')
-        .populate('creator')
+        .populate({path:'rented',select:'name'})
+        .populate('owner')
         .lean();
     if (housing) {
         const viewModel = {
@@ -21,8 +21,8 @@ async function getHousingById(id) {
             image: housing.image,
             description: housing.description,
             pieces: housing.pieces,
-            rented: housing.rented,
-            ownerId:cube.owner._id.toString()
+            rented: housing.rented.map(x=>x.name),
+            ownerId:housing.owner._id.toString()
         }
         return viewModel;
     }
@@ -35,7 +35,7 @@ async function edit(id, housing) {
         throw new ReferenceError('No such data');
     }
     Object.assign(current, housing);
-    return current.save();
+    return await current.save();
 }
 
 async function del(id) {
@@ -43,7 +43,7 @@ async function del(id) {
     if (!current) {
         throw new ReferenceError('No such data');
     }
-  return Housing.deleteOne({_id:id});
+  return await Housing.deleteOne({_id:id});
 }
 
 async function getAllHousings() {
