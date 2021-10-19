@@ -1,9 +1,39 @@
-const router=require('express').Router();
+const router = require('express').Router();
+const { getLastThreeHousings, getAllHousings } = require('../services/housingService')
 
-router.get('/',(req,res)=>{
-    console.log(req.user)
-    res.render('home/home',{title:'Real Estate Agency',user:req.user})
+router.get('/', async (req, res) => {
+    try {
+        const ctx = {
+            title: 'Real Estate Agency',
+            user: req.user
+        }
+        
+        let lastThreeHousings = await getLastThreeHousings();
+        if (lastThreeHousings.length > 0) {
+            ctx.housings = lastThreeHousings;
+        }
+        res.render('home/home', ctx)
+    } catch (error) {
+        res.render('404', { title: 'Not Found' });
+    }
+});
+
+router.get('/offers', async (req, res) => {
+    try {
+        const ctx = {
+            title: 'Real Estate Agency',
+            user: req.user
+        }
+        const all = await getAllHousings();
+
+        if (all.length > 0) {
+            ctx.housings = all;
+        }
+        res.render('home/offers', ctx)
+    } catch (error) {
+        res.render('404', { title: 'Not Found' });
+    }
 });
 
 
-module.exports=router;
+module.exports = router;
