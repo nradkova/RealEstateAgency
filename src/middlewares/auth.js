@@ -1,24 +1,27 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const { SALT_ROUNDS, TOKEN_SECRET, COOKIE_NAME } = require('./config.json')[process.env.NODE_ENV];
+const { SALT_ROUNDS, TOKEN_SECRET, COOKIE_NAME } = require('../config/config.json')[process.env.NODE_ENV];
+const{createUser,getUserByUsername}=require('../services/userService')
 
 const authMiddleware = () => (req, res, next) => {
     if (parseToken(req, res)) {
         req.auth = {
-            async register() {
-
+            async register(name,username,password) {
+                const token=await register(name,username,password);
+                res.cookie(COOKIE_NAME,token);
             },
-            async login(){
-
+            async login(username,password){
+                const token=await login(username,password);
+                res.cookie(COOKIE_NAME,token);
             },
-            async logout(){
+            logout(){
                 res.clearCookie(COOKIE_NAME);
             }
         }
 
+        next();
     }
-    next();
 }
 
 module.exports = authMiddleware;
@@ -47,14 +50,26 @@ function generateToken(user) {
     }, TOKEN_SECRET);
 }
 
-async function register(){
+async function register(name,username,password){
+    const existing=await getUserByUsername(username);
+    if(existing){
+        throw new Error('Username already exists!')
+    }
 
+    const hashedPassword= await bcrypt.hash(password,SALT_ROUNDS);
+
+    const user=await createUser(name,username,hashedPassword);
+    return generateToken(user);
 }
 
-async function login(){
-
-}
-
-async function logout(){
-
+async function login(username,password){
+     const user=await getUserByUsername(username);
+     if(!user){
+         throw new Error ('User with such name does not exist!')
+     }
+     const hasMatch=await bcrypt.compare(password,user.hashedPassword);
+     if(!hasMatch){
+         throw new Error('Invalid name or password!')
+     }
+     return generateToken(user);
 }

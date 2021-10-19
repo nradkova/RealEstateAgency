@@ -1,8 +1,9 @@
+const homeController=require('../contollers/homeController');
+const authController=require('../contollers/authController');
+
 
 const routesConfig=(app)=>{
-    app.get('/',(req,res)=>{
-        res.render('home',{title:'Home'})
-    })
+    app.use('/',homeController);
+    app.use('/auth',authController);
 }
-
 module.exports=routesConfig;
