@@ -39,6 +39,6 @@ const schema=new Schema({
         ref:'User',
         required:true
     }
-})
+},{timestamps:true});
 
 module.exports=model('Housing',schema);

@@ -66,7 +66,7 @@ async function getAllHousingsOfType(type) {
 
 
 async function getLastThreeHousings() {
-    return await Housing.find().sort({ createdAt: 1 }).limit(3).lean();
+    return await Housing.find().sort({ createdAt: -1 }).limit(3).lean();
 }
 
 
