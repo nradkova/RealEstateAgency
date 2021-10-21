@@ -1,11 +1,10 @@
 const router = require('express').Router();
 
-const Housing = require('../models/Housing');
 const preloadHousing = require('../middlewares/preload');
 const formatErrorMsg = require('../util/formatErrorMsg');
 const { isUser, isOwner } = require('../middlewares/guard');
 const { housingValidation } = require('../middlewares/validation');
-const { createHousing, delHousing, editHousing} = require('../services/housingService');
+const { createHousing, delHousing, editHousing, rentHousing} = require('../services/housingService');
 
 router.get('/create', isUser(), (req, res) => {
     try {
@@ -77,10 +76,7 @@ router.get('/:id/details', preloadHousing(), async (req, res) => {
 
 router.get('/:id/rent',isUser(), async (req, res) => {
     try {
-        const housing = await Housing.findById(req.params.id);
-        housing.rented.push(req.user._id);
-        housing.pieces-=1;
-        await editHousing(req.params.id,housing);
+        await rentHousing(req.params.id,req.user._id);
         res.redirect('/');
     } catch (error) {
         res.redirect('/404')

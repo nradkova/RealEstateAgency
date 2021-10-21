@@ -38,6 +38,16 @@ async function editHousing(id, housing) {
     return await current.save();
 }
 
+async function rentHousing(id, userId) {
+    const current = await Housing.findById(id);
+    if (!current) {
+        throw new ReferenceError('No such data');
+    }
+    current.rented.push(userId);
+    current.pieces-=1;
+    return await current.save();
+}
+
 async function delHousing(id) {
     const current = await Housing.findById(id);
     if (!current) {
@@ -64,6 +74,7 @@ module.exports = {
     createHousing,
     getHousingById,
     editHousing,
+    rentHousing,
     delHousing,
     getAllHousings,
     getAllHousingsOfType,
