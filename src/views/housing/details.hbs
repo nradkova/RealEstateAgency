@@ -32,10 +32,16 @@
                      {{/if}}
                      {{#if logged}}
                      <!-- logged in user with available pieces-->
-                     <a href="#" class="rentHome">Rent a home, available 2 housing</a>
-                     <p class="alRentHome">You have already rent this home</p>
+                         {{#if toRent}}
+                         <a href="/housing/{{housing._id}}/rent" class="rentHome">Rent a home, available 2 housing</a>
+                         {{/if}}
+                         {{#if hasRented}}
+                         <p class="alRentHome">You have already rent this home</p>
+                         {{/if}}
                      <!-- logged in user with no available pieces-->
-                     <p class="no-housing">No Housing Available!</p>
+                        {{#if noPieces}}
+                        <p class="no-housing">No Housing Available!</p>
+                        {{/if}}
                      {{/if}}
                  </div>
                 {{/unless}}

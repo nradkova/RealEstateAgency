@@ -1,10 +1,11 @@
 const router = require('express').Router();
 
+const Housing = require('../models/Housing');
 const preloadHousing = require('../middlewares/preload');
 const formatErrorMsg = require('../util/formatErrorMsg');
 const { isUser, isOwner } = require('../middlewares/guard');
 const { housingValidation } = require('../middlewares/validation');
-const { createHousing, delHousing, editHousing } = require('../services/housingService');
+const { createHousing, delHousing, editHousing} = require('../services/housingService');
 
 router.get('/create', isUser(), (req, res) => {
     try {
@@ -22,7 +23,7 @@ router.post('/create', isUser(), housingValidation(), async (req, res) => {
         const { name, type, year, city, image, description, pieces } = req.body;
         const housing = {
             name: name.trim(),
-            type,
+            type:type.trim().toLowerCase(),
             year: Number(year),
             city: city.trim(),
             image,
@@ -42,7 +43,6 @@ router.post('/create', isUser(), housingValidation(), async (req, res) => {
     }
 });
 
-
 router.get('/:id/details', preloadHousing(), async (req, res) => {
     try {
         const housing = req.housing;
@@ -59,10 +59,29 @@ router.get('/:id/details', preloadHousing(), async (req, res) => {
         if (housing.ownerId == req.user?._id) {
             ctx.owner = 'owner';
         } else {
+            if(housing.rented.includes(req.user.name)){
+                ctx.hasRented=true;
+            }else if(!housing.rented.includes(req.user.name) && housing.pieces>0){
+                ctx.toRent=true;
+            }else{
+                ctx.noPieces=true;
+            }
             ctx.logged = 'logged';
         }
         res.render('housing/details', ctx);
         
+    } catch (error) {
+        res.redirect('/404')
+    }
+});
+
+router.get('/:id/rent',isUser(), async (req, res) => {
+    try {
+        const housing = await Housing.findById(req.params.id);
+        housing.rented.push(req.user._id);
+        housing.pieces-=1;
+        await editHousing(req.params.id,housing);
+        res.redirect('/');
     } catch (error) {
         res.redirect('/404')
     }
@@ -93,7 +112,7 @@ router.post('/:id/edit', preloadHousing(), isOwner(), housingValidation(), async
         const { name, type, year, city, image, description, pieces } = req.body;
         const housing = {
             name: name.trim(),
-            type,
+            type:type.trim().toLowerCase(),
             year: Number(year),
             city: city.trim(),
             image,
