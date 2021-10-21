@@ -1,22 +1,23 @@
 const router = require('express').Router();
 
 const preloadHousing = require('../middlewares/preload');
+const formatErrorMsg = require('../util/formatErrorMsg');
 const { isUser, isOwner } = require('../middlewares/guard');
 const { housingValidation } = require('../middlewares/validation');
-const { createHousing, getHousingById, del } = require('../services/housingService')
+const { createHousing, delHousing, editHousing } = require('../services/housingService');
 
 router.get('/create', isUser(), (req, res) => {
     try {
-        res.render('housing/create', { title: 'Create Offer'})
+        res.render('housing/create', { title: 'Create Offer' })
     } catch (error) {
         res.render('404', { title: 'Not Found' });
     }
 });
 
-router.post('/create', isUser(),housingValidation(),  async (err, req, res,next) => {
+router.post('/create', isUser(), housingValidation(), async (req, res) => {
     try {
-        if(err){
-            throw err;
+        if (req.housingErrors) {
+            throw req.housingErrors;
         }
         const { name, type, year, city, image, description, pieces } = req.body;
         const housing = {
@@ -32,19 +33,23 @@ router.post('/create', isUser(),housingValidation(),  async (err, req, res,next)
         await createHousing(housing);
         res.redirect('/');
     } catch (error) {
-        const errors=error.name=='validationError'?error.message:[error];
-        res.render('housing/create',{title:'Create Offer',errors,housing:req.body});
+        if (error.name == 'inputError'||error.name == 'ValidationError') {
+            errors = formatErrorMsg(error);
+            res.render('housing/create', { title: 'Create Offer', errors, housing: req.body });
+        } else  {
+            res.redirect('/404')
+        } 
     }
 });
 
 
-router.get('/:id/details',preloadHousing(), async (req, res) => {
+router.get('/:id/details', preloadHousing(), async (req, res) => {
     try {
         const housing = req.housing;
         if (housing.rented.length > 0) {
-            housing.rented = housing.rented.join(', ')
+            housing.rented = housing.rented.join(', ');
         }
-        const ctx={
+        const ctx = {
             title: 'Details',
             housing
         }
@@ -56,34 +61,66 @@ router.get('/:id/details',preloadHousing(), async (req, res) => {
         } else {
             ctx.logged = 'logged';
         }
-        res.render('housing/details', ctx)
+        res.render('housing/details', ctx);
+        
     } catch (error) {
-        res.render('404', { title: 'Not Found' });
+        res.redirect('/404')
     }
 });
 
-router.get('/:id/edit',preloadHousing(),isOwner(), async (req, res) => {
+router.get('/:id/edit', preloadHousing(), isOwner(), async (req, res) => {
     try {
         const housing = req.housing;
         if (housing.rented.length > 0) {
             housing.rented = housing.rented.join(', ')
         }
-        const ctx={
+        const ctx = {
             title: 'Edit',
             housing
         }
-        res.render('housing/edit', ctx)
+        res.render('housing/edit', ctx);
+
     } catch (error) {
-        res.render('404', { title: 'Not Found' });
+        res.redirect('/404')
     }
 });
 
-router.get('/:id/delete', preloadHousing(),isOwner(), async (req, res) => {
+router.post('/:id/edit', preloadHousing(), isOwner(), housingValidation(), async (req, res) => {
     try {
-        await del(req.params.id);
-       res.redirect('/');
+        if (req.housingErrors) {
+            throw req.housingErrors;
+        }
+        const { name, type, year, city, image, description, pieces } = req.body;
+        const housing = {
+            name: name.trim(),
+            type,
+            year: Number(year),
+            city: city.trim(),
+            image,
+            description: description.trim(),
+            pieces: Number(pieces),
+            owner: req.user._id
+        }
+        await editHousing(req.params.id, housing);
+        res.redirect('/');
+
     } catch (error) {
-        res.render('404', { title: 'Not Found' });
+        if (error.name == 'inputError'||error.name == 'ValidationError') {
+            errors = formatErrorMsg(error);
+            res.render('housing/create', { title: 'Create Offer', errors, housing: req.body });
+        } else  {
+            res.redirect('/404')
+        } 
+    }
+});
+
+router.get('/:id/delete', preloadHousing(), isOwner(), async (req, res) => {
+    try {
+        await delHousing(req.params.id);
+        res.redirect('/');
+
+    } catch (error) {
+        res.redirect('/404')
     }
 });
 

@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
 router.get('/offers', async (req, res) => {
     try {
         const ctx = {
-            title: 'Real Estate Agency'
+            title: 'Offers'
         }
         const all = await getAllHousings();
 
@@ -28,6 +28,22 @@ router.get('/offers', async (req, res) => {
             ctx.housings = all;
         }
         res.render('home/offers', ctx)
+    } catch (error) {
+        res.render('404', { title: 'Not Found' });
+    }
+});
+
+router.get('/search', async (req, res) => {
+    try {
+        const ctx = {
+            title: 'Search'
+        }
+        const all = await getAllHousings();
+
+        if (all.length > 0) {
+            ctx.housings = all;
+        }
+        res.render('home/search', ctx)
     } catch (error) {
         res.render('404', { title: 'Not Found' });
     }

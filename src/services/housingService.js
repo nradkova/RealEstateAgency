@@ -29,7 +29,7 @@ async function getHousingById(id) {
     return undefined;
 }
 
-async function edit(id, housing) {
+async function editHousing(id, housing) {
     const current = await Housing.findById(id);
     if (!current) {
         throw new ReferenceError('No such data');
@@ -38,7 +38,7 @@ async function edit(id, housing) {
     return await current.save();
 }
 
-async function del(id) {
+async function delHousing(id) {
     const current = await Housing.findById(id);
     if (!current) {
         throw new ReferenceError('No such data');
@@ -58,8 +58,8 @@ async function getLastThreeHousings() {
 module.exports = {
     createHousing,
     getHousingById,
-    edit,
-    del,
+    editHousing,
+    delHousing,
     getAllHousings,
     getLastThreeHousings,
 }

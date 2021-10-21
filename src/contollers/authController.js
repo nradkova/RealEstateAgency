@@ -1,45 +1,46 @@
-const router=require('express').Router();
-const {isGuest}=require('../middlewares/guard');
+const router = require('express').Router();
+const { isGuest } = require('../middlewares/guard');
 const { userRegisterValidation } = require('../middlewares/validation');
 
-router.get('/login',isGuest(),(req,res)=>{
-    res.render('auth/login',{title:'Login'})
+router.get('/login', isGuest(), (req, res) => {
+    res.render('auth/login', { title: 'Login' })
 });
 
-router.post('/login',isGuest(),async (req,res)=>{
+router.post('/login', isGuest(), async (req, res) => {
     try {
-        const {username,password}=req.body;
-        await req.auth.login(username.trim().toLowerCase(),password.trim());
+        const { username, password } = req.body;
+        await req.auth.login(username.trim().toLowerCase(), password.trim());
         res.redirect('/');
     } catch (error) {
-        const errors=[];
+        const errors = [];
         errors.push(error.message)
-        res.render('auth/login',{title:'Register',errors});
+        res.render('auth/login', { title: 'Register', errors });
     }
 });
 
-router.get('/register',isGuest(),(req,res)=>{
-    res.render('auth/register',{title:'Register'});
+router.get('/register', isGuest(), (req, res) => {
+    res.render('auth/register', { title: 'Register' });
 });
 
-router.post('/register',isGuest(),userRegisterValidation(),async (err,req,res,next)=>{
+router.post('/register', isGuest(), userRegisterValidation(), async (req, res) => {
     try {
-        if(err){
-            throw err;
+        if (req.userErrors) {
+            throw req.userErrors;
         }
-        const{name,username,password}=req.body;
-        await req.auth.register(name.trim(),username.trim().toLowerCase(),password.trim())
+        const { name, username, password } = req.body;
+        await req.auth.register(name.trim(), username.trim().toLowerCase(), password.trim())
         res.redirect('/');
-        
+
     } catch (error) {
-        const errors=error.name=='validationError'?error.message:[error];
-        res.render('auth/register',{title:'Register',errors});
+        console.log(error);
+        const errors = error.name == 'validationError' ? error.message : [error];
+        res.render('auth/register', { title: 'Register', errors });
     }
 });
 
-router.get('/logout',(req,res)=>{
+router.get('/logout', (req, res) => {
     req.auth.logout();
     res.redirect('/');
 });
 
-module.exports=router;
+module.exports = router;

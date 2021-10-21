@@ -15,23 +15,24 @@ function userRegisterValidation() {
             errors.push('Passwords do not match!')
         }
         if (errors.length > 0) {
-            const err = {
-                name: 'validationError',
+            req.userErrors = {
+                name: 'inputError',
                 message: errors
             }
-            next(err)
-        } else {
-            next();
         }
+        next();
     }
 };
 
 function housingValidation() {
     return (req, res, next) => {
-        const { name, year, city, image, description, pieces } = req.body;
+        const { name, type, year, city, image, description, pieces } = req.body;
         const errors = [];
         if (name.trim().length < 6) {
             errors.push('The Name should be at least 6 characters')
+        }
+        if (!['Apartment', 'Villa', 'House'].includes(type)) {
+            errors.push('The Type should be Apartment, Villa or House!')
         }
         if (Number(year) < 1850 || Number(year) > 2021) {
             errors.push('The Year should be between 1850 and 2021!')
@@ -49,14 +50,12 @@ function housingValidation() {
             errors.push('The Available Pieces should be positive number (from 0 to 10)!')
         }
         if (errors.length > 0) {
-            const err = {
-                name: 'validationError',
+            req.housingErrors = {
+                name: 'inputError',
                 message: errors
             }
-            next(err)
-        } else {
-            next();
         }
+        next();
     }
 };
 
