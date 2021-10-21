@@ -22,15 +22,17 @@ router.get('/register',isGuest(),(req,res)=>{
     res.render('auth/register',{title:'Register'});
 });
 
-router.post('/register',isGuest(),userRegisterValidation(),async (req,res)=>{
+router.post('/register',isGuest(),userRegisterValidation(),async (err,req,res,next)=>{
     try {
+        if(err){
+            throw err;
+        }
         const{name,username,password}=req.body;
         await req.auth.register(name.trim(),username.trim().toLowerCase(),password.trim())
         res.redirect('/');
         
     } catch (error) {
-        const errors=[];
-        errors.push(error.message)
+        const errors=error.name=='validationError'?error.message:[error];
         res.render('auth/register',{title:'Register',errors});
     }
 });

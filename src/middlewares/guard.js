@@ -18,7 +18,18 @@ function isUser() {
     }
 }
 
+function isOwner() {
+    return (req, res, next) => {
+        if (req.user && req.housing &&(req.user._id==req.housing.ownerId)) {
+            next();
+        } else {
+            res.redirect('/offers');
+        }
+    }
+}
+
 module.exports={
     isGuest,
-    isUser
+    isUser,
+    isOwner
 }

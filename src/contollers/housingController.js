@@ -1,19 +1,23 @@
 const router = require('express').Router();
-const { isUser, isGuest } = require('../middlewares/guard');
+
+const preloadHousing = require('../middlewares/preload');
+const { isUser, isOwner } = require('../middlewares/guard');
 const { housingValidation } = require('../middlewares/validation');
 const { createHousing, getHousingById, del } = require('../services/housingService')
 
 router.get('/create', isUser(), (req, res) => {
     try {
-        res.render('housing/create', { title: 'Create Offer', user: req.user })
+        res.render('housing/create', { title: 'Create Offer'})
     } catch (error) {
         res.render('404', { title: 'Not Found' });
     }
 });
 
-router.post('/create', isUser(), housingValidation('housing/create', 'Create Offer'), async (req, res) => {
+router.post('/create', isUser(),housingValidation(),  async (err, req, res,next) => {
     try {
-        console.log(req.body)
+        if(err){
+            throw err;
+        }
         const { name, type, year, city, image, description, pieces } = req.body;
         const housing = {
             name: name.trim(),
@@ -28,20 +32,21 @@ router.post('/create', isUser(), housingValidation('housing/create', 'Create Off
         await createHousing(housing);
         res.redirect('/');
     } catch (error) {
-        res.render('404', { title: 'Not Found' });
+        const errors=error.name=='validationError'?error.message:[error];
+        res.render('housing/create',{title:'Create Offer',errors,housing:req.body});
     }
 });
 
-router.get('/:id/details', async (req, res) => {
+
+router.get('/:id/details',preloadHousing(), async (req, res) => {
     try {
-        const housing = await getHousingById(req.params.id);
+        const housing = req.housing;
         if (housing.rented.length > 0) {
             housing.rented = housing.rented.join(', ')
         }
         const ctx={
             title: 'Details',
-            housing,
-            user:req.user
+            housing
         }
         if (!req.user) {
             ctx.guest = 'guest';
@@ -57,7 +62,23 @@ router.get('/:id/details', async (req, res) => {
     }
 });
 
-router.get('/:id/delete', isUser(), async (req, res) => {
+router.get('/:id/edit',preloadHousing(),isOwner(), async (req, res) => {
+    try {
+        const housing = req.housing;
+        if (housing.rented.length > 0) {
+            housing.rented = housing.rented.join(', ')
+        }
+        const ctx={
+            title: 'Edit',
+            housing
+        }
+        res.render('housing/edit', ctx)
+    } catch (error) {
+        res.render('404', { title: 'Not Found' });
+    }
+});
+
+router.get('/:id/delete', preloadHousing(),isOwner(), async (req, res) => {
     try {
         await del(req.params.id);
        res.redirect('/');

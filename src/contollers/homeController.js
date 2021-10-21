@@ -4,8 +4,7 @@ const { getLastThreeHousings, getAllHousings } = require('../services/housingSer
 router.get('/', async (req, res) => {
     try {
         const ctx = {
-            title: 'Real Estate Agency',
-            user: req.user
+            title: 'Real Estate Agency'
         }
         
         let lastThreeHousings = await getLastThreeHousings();
@@ -21,8 +20,7 @@ router.get('/', async (req, res) => {
 router.get('/offers', async (req, res) => {
     try {
         const ctx = {
-            title: 'Real Estate Agency',
-            user: req.user
+            title: 'Real Estate Agency'
         }
         const all = await getAllHousings();
 
