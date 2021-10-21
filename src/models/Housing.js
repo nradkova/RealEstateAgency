@@ -7,7 +7,7 @@ const schema=new Schema({
     },
     type :{
         type:String,
-        enum:['Apartment', 'Villa', 'House'],
+        enum:['apartment', 'villa', 'house'],
         required:true
     },
     year:{

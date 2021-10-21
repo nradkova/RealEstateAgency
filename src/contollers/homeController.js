@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { getLastThreeHousings, getAllHousings } = require('../services/housingService')
+const { getLastThreeHousings, getAllHousings, getAllHousingsOfType } = require('../services/housingService')
 
 router.get('/', async (req, res) => {
     try {
@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
         }
         res.render('home/home', ctx)
     } catch (error) {
-        res.render('404', { title: 'Not Found' });
+       res.redirect('/404');
     }
 });
 
@@ -29,23 +29,24 @@ router.get('/offers', async (req, res) => {
         }
         res.render('home/offers', ctx)
     } catch (error) {
-        res.render('404', { title: 'Not Found' });
+        res.redirect('/404');
     }
 });
 
 router.get('/search', async (req, res) => {
     try {
-        const ctx = {
-            title: 'Search'
-        }
-        const all = await getAllHousings();
-
-        if (all.length > 0) {
-            ctx.housings = all;
-        }
-        res.render('home/search', ctx)
+        res.render('home/search', { title: 'Search'})
     } catch (error) {
-        res.render('404', { title: 'Not Found' });
+        res.redirect('/404');
+    }
+});
+
+router.post('/search', async (req, res) => {
+    try {
+        const housings = await getAllHousingsOfType(req.body.search.toLowerCase());
+        res.render('home/search', {title: 'Search',housings})
+    } catch (error) {
+        res.redirect('/404');
     }
 });
 

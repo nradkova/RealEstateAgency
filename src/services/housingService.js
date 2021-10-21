@@ -50,6 +50,11 @@ async function getAllHousings() {
     return await Housing.find({}).lean();
 }
 
+async function getAllHousingsOfType(type) {
+    return await Housing.find().where('type').equals(type).lean();
+}
+
+
 async function getLastThreeHousings() {
     return await Housing.find().sort({ createdAt: 1 }).limit(3).lean();
 }
@@ -61,5 +66,6 @@ module.exports = {
     editHousing,
     delHousing,
     getAllHousings,
+    getAllHousingsOfType,
     getLastThreeHousings,
 }

@@ -31,8 +31,8 @@ function housingValidation() {
         if (name.trim().length < 6) {
             errors.push('The Name should be at least 6 characters')
         }
-        if (!['Apartment', 'Villa', 'House'].includes(type)) {
-            errors.push('The Type should be Apartment, Villa or House!')
+        if (!['apartment', 'villa', 'house'].includes(type.toLowerCase())) {
+            errors.push('The Type should be apartment, villa or house!')
         }
         if (Number(year) < 1850 || Number(year) > 2021) {
             errors.push('The Year should be between 1850 and 2021!')
