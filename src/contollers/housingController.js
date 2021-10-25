@@ -34,7 +34,7 @@ router.post('/create', isUser(), housingValidation(), async (req, res) => {
         res.redirect('/');
     } catch (error) {
         if (error.name == 'inputError'||error.name == 'ValidationError') {
-            errors = formatErrorMsg(error);
+           const errors = formatErrorMsg(error);
             res.render('housing/create', { title: 'Create Offer', errors, housing: req.body });
         } else  {
             res.redirect('/404')
@@ -102,6 +102,7 @@ router.get('/:id/edit', preloadHousing(), isOwner(), async (req, res) => {
 
 router.post('/:id/edit', preloadHousing(), isOwner(), housingValidation(), async (req, res) => {
     try {
+        console.log(req.body);
         if (req.housingErrors) {
             throw req.housingErrors;
         }
@@ -121,8 +122,8 @@ router.post('/:id/edit', preloadHousing(), isOwner(), housingValidation(), async
 
     } catch (error) {
         if (error.name == 'inputError'||error.name == 'ValidationError') {
-            errors = formatErrorMsg(error);
-            res.render('housing/create', { title: 'Create Offer', errors, housing: req.body });
+           const errors = formatErrorMsg(error);
+            res.render('housing/edit', { title: 'Create Offer', errors, housing: req.body });
         } else  {
             res.redirect('/404')
         } 

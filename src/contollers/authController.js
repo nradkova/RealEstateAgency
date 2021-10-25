@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { isGuest } = require('../middlewares/guard');
+const formatErrorMsg=require('../util/formatErrorMsg')
 const { userRegisterValidation } = require('../middlewares/validation');
 
 router.get('/login', isGuest(), (req, res) => {
@@ -9,12 +10,11 @@ router.get('/login', isGuest(), (req, res) => {
 router.post('/login', isGuest(), async (req, res) => {
     try {
         const { username, password } = req.body;
-        await req.auth.login(username.trim().toLowerCase(), password.trim());
+        await req.auth.login(username.trim(), password.trim());
         res.redirect('/');
     } catch (error) {
-        const errors = [];
-        errors.push(error.message)
-        res.render('auth/login', { title: 'Register', errors });
+        const errors = formatErrorMsg(error);
+        res.render('auth/login', { title: 'Login', errors });
     }
 });
 
@@ -28,12 +28,12 @@ router.post('/register', isGuest(), userRegisterValidation(), async (req, res) =
             throw req.userErrors;
         }
         const { name, username, password } = req.body;
-        await req.auth.register(name.trim(), username.trim().toLowerCase(), password.trim())
+        await req.auth.register(name, username.trim(), password.trim())
         res.redirect('/');
 
     } catch (error) {
-        console.log(error);
-        const errors = error.name == 'validationError' ? error.message : [error];
+        // console.log(error);
+        const errors = formatErrorMsg(error);
         res.render('auth/register', { title: 'Register', errors });
     }
 });
